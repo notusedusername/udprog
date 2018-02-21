@@ -97,8 +97,6 @@ main (void)
 		    kulcs[2] = codeabc[ki];
 		    kulcs[3] = codeabc[li];
 
-        printf("[%d%d%d%d]\n",codeabc[ii], codeabc[ji], codeabc[ki], codeabc[li])
-
 
 		    if (exor_tores (kulcs, KULCS_MERET, titkos, p - titkos))
 		      printf
