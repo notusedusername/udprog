@@ -54,7 +54,7 @@ int szamlalo = 0;
 			}
 			int i1 = i;
 			int j1 = j;
-			cout<<szamlalo<<endl;
+			
 			if ( (i1 == 6 && j1 == 5) || (i1 == 5 && j1 == 6)){
 				megoldas1= v[szamlalo];
 				ot = j;
