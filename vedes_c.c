@@ -98,6 +98,13 @@ int main( int argc, char* argv[]){
 			return 0;
 		}
 		else printf("Not you:%s",buffer );
+	
+		len = BUFFER_SIZE;
+
+		recvs = recv(sock, buffer, len, flags);
+
+		if ( strcmp ( buffer, "Noice") == 0){
+			printf("\t\t\t\t\t\tSent\n");
 	}
 
 }
