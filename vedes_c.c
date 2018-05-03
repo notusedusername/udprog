@@ -105,6 +105,8 @@ int main( int argc, char* argv[]){
 
 		if ( strcmp ( buffer, "Noice") == 0){
 			printf("\t\t\t\t\t\tSent\n");
+	
+		
+		}
 	}
-
 }
