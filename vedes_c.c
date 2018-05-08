@@ -1,43 +1,72 @@
 #include <stdio.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <string.h>
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <ncurses.h>
+
 
 
 #define BUFFER_SIZE 1024
 
 #define PORT 3300
 
-void incoming(char buffer[BUFFER_SIZE], int len, int recvs, int sock){
 
+struct args_struct
+{
+	char buffer[BUFFER_SIZE];
+
+	int len;
+
+	int recvs;
+
+	int sock;
+}args;
+
+
+//void *incoming(char buffer[BUFFER_SIZE], int len, int recvs, int sock){		thread nélkül
+
+
+void *incoming(void *arguments){
 	//BEJÖVŐ ÜZENET
 
-	recvs = 0;
+	struct args_struct *args = arguments;
+	for(;;){
+		args -> recvs = 0;
 
-	len = BUFFER_SIZE;
-
-	recvs = recv(sock, buffer, len, 0);
-
-	if ( recvs == 0 ){
-		printf("Server closed connection.\n");
+		args -> len = BUFFER_SIZE+1;
 		
-		close(sock);
+		args -> recvs = recv(args -> sock, args -> buffer, args -> len, 0);
 
-		exit(4);	
-	}
-	else printf("Not you:%s",buffer );
+		if ( args -> recvs == 0 ){
+			printf("Server closed connection.\n");
+			
+			close(args -> sock);
 
+			exit(4);	
+		}
+		else if(args -> recvs > 0) {
+		
+			printf("%s\n\n",args -> buffer );
+			
+		}
+		else printf("Recv error!\n");
+	}	
+	//incoming(buffer, len, recvs, sock);
 }
 
 void outgoing (char buffer[BUFFER_SIZE], int len, int sends, int sock){
 
 	sends = 0;
 
-	printf("You:\t");
+	//printf("\nYou:\t");
 
 	//scanf("%s", buffer);
+	//noecho();
 
 	fgets(buffer, BUFFER_SIZE, stdin);										// a space-ket ignorálja, kicsit pofásabb
 		
@@ -50,7 +79,7 @@ void outgoing (char buffer[BUFFER_SIZE], int len, int sends, int sock){
 	if ( sends < 0 ){
 		printf("Can't send the message! Try it again!\n");
 	}
-
+	printf("\n");
 }
 
 int main( int argc, char* argv[]){
@@ -82,10 +111,8 @@ int main( int argc, char* argv[]){
 
 	char option = 1;
 
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&option, sizeof option);
-	setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (char *)&option, sizeof option);
 
-	ext = connect ( sock, (struct sockadrr *) &server, server_addrlen );
+	ext = connect ( sock, (struct sockaddr *) &server, server_addrlen );
 
 	if ( ext < 0 )
 	{
@@ -102,20 +129,30 @@ int main( int argc, char* argv[]){
 
 	int sends;
 
-	int recvs;
+	pthread_t thread;
 
-	printf("HELLO THERE! TYPE YOUR MESSAGE HERE!\n");
+	//args.buffer = in_buffer;
 
+	args.len = 0;
+
+	args.recvs = 0;
+
+	args.sock = sock;
+
+	if (pthread_create( &thread, NULL, incoming, (void *) &args ) != 0 ){
+
+		printf("Can't create incoming thread. \n");
+	}
 
 	for(;;){
-
-		
- 		outgoing(out_buffer, len, sends, sock);
  		
-		incoming(in_buffer, len, recvs, sock);
+ 		//initscr();
+		//incoming(in_buffer, len, recvs, sock);			tread nélkül
 		
-		
+		outgoing(out_buffer, len, sends, sock);
 		
 	}
+
+
 
 }
