@@ -25,6 +25,8 @@ struct args_struct
 	int recvs;
 
 	int sock;
+
+	int flag;
 }args;
 
 
@@ -43,18 +45,31 @@ void *incoming(void *arguments){
 		args -> recvs = recv(args -> sock, args -> buffer, args -> len, 0);
 
 		if ( args -> recvs == 0 ){
-			printf("Server closed connection.\n");
+			printf("Server closed connection. Bye.\n");
 			
 			close(args -> sock);
 
 			exit(4);	
 		}
-		else if(args -> recvs > 0) {
+		else if(args -> recvs > 0 && strcmp(args -> buffer,"<<STOP_*_ACK>>" )) {
 		
 			printf("%s\n\n",args -> buffer );
 			
 		}
 		else printf("Recv error!\n");
+
+		if( !strcmp(args -> buffer, "<<STOP_*_ACK>>")){
+
+			args -> flag = 1;
+		}
+
+		if ( args -> flag == 0 ){
+
+			sprintf(args -> buffer, "CLT_*_ACK");
+
+			send(args -> sock, args -> buffer, strlen(args -> buffer)+1, 0 );
+	
+		}
 	}	
 	//incoming(buffer, len, recvs, sock);
 }
@@ -138,6 +153,8 @@ int main( int argc, char* argv[]){
 	args.recvs = 0;
 
 	args.sock = sock;
+
+	args.flag = 0;
 
 	if (pthread_create( &thread, NULL, incoming, (void *) &args ) != 0 ){
 
